@@ -1,0 +1,11 @@
+astropy
+astroquery
+images-to-zarr
+matplotlib
+numpy
+opencv-python
+pandas
+Pillow
+pyarrow
+reproject
+shapely
