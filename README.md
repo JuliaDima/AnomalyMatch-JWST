@@ -4,16 +4,16 @@
 
 <p align="center">
   <a href="https://github.com/esa/AnomalyMatch">
-    <img alt="AnomalyMatch on GitHub" src="https://img.shields.io/badge/GitHub-esa%2FAnomalyMatch-181717?style=for-the-badge&logo=github">
+    <img alt="View AnomalyMatch on GitHub" src="https://img.shields.io/badge/View%20AnomalyMatch%20on-GitHub-24292f?style=flat-square&logo=github">
   </a>
 </p>
 
-This repository builds on top of [AnomalyMatch](https://github.com/esa/AnomalyMatch), specialised on discovering gravitational lenses in James Webb Space Telescope.
+This repository builds on top of [AnomalyMatch](https://github.com/esa/AnomalyMatch) and is focused on discovering gravitational lenses in JWST.
 
 ## Example Output
 
 <p align="center">
-  <a href="assets/mosaic_A.pdf">Open example mosaic (PDF)</a>
+  <img src="assets/mosaic_A.png" alt="Grade A lens mosaic" width="800">
 </p>
 
 *Mosaic of lenses given a Grade A found in this project, with their measurement method specified (spectroscopic vs photometric).*
@@ -63,6 +63,10 @@ python run_jwst_pipeline.py
 
 ### 5. Inspection and Model Work
 
-The notebooks are used for:
-- `scripts.ipynb`: exploratory analysis, lens inspection, summary statistics, manual replacement work, plotting
-- `model_training.ipynb`: training and evaluation workflow on the prepared JWST cutout dataset
+Python scripts are available for the main interactive workflows:
+- `scripts.py`: exploratory utilities, including de-duplication of nearby labelled lenses
+- `model_training.py`: training and evaluation workflow on the prepared JWST cutout dataset
+
+The original notebooks are still available for exploratory work:
+- `scripts.ipynb`
+- `model_training.ipynb`

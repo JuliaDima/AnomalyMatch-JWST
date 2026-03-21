@@ -7,6 +7,7 @@ import math
 import os
 import warnings
 from collections import defaultdict
+from pathlib import Path
 
 import cv2
 import matplotlib.pyplot as plt
@@ -18,11 +19,13 @@ from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from astropy.nddata import Cutout2D
 from astropy.utils.exceptions import AstropyWarning
+from astropy.visualization import ZScaleInterval
 from astropy.wcs import WCS
 from astroquery.esa.jwst import Jwst
 from astroquery.mast import Mast
 from matplotlib.path import Path as PathM
 from reproject import reproject_interp
+from sklearn.cluster import DBSCAN
 from shapely.geometry import Point, Polygon
 
 from constants import *
@@ -318,6 +321,116 @@ def parse_spoly_to_polygon(spoly_string):
         raise ValueError("Invalid polygon string, odd number of coordinates")
     polygon = [(float(coords[i]), float(coords[i+1])) for i in range(0, len(coords), 2)]
     return polygon
+
+
+def cluster_sources_by_radius(df, radius_arcsec=30.0, ra_col="RA", dec_col="DEC", cluster_col="cluster_id"):
+    clustered_df = df.copy()
+    coords = SkyCoord(clustered_df[ra_col].to_numpy() * u.deg, clustered_df[dec_col].to_numpy() * u.deg)
+    features = np.vstack([coords.ra.radian, coords.dec.radian]).T
+    eps_rad = (radius_arcsec * u.arcsec).to(u.rad).value
+    clustered_df[cluster_col] = DBSCAN(
+        eps=eps_rad,
+        min_samples=1,
+        metric="euclidean",
+    ).fit_predict(features)
+    return clustered_df
+
+
+def get_duplicate_cluster_ids(df, cluster_col="cluster_id"):
+    cluster_sizes = df[cluster_col].value_counts()
+    return sorted(cluster_sizes.index[cluster_sizes > 1].tolist())
+
+
+def read_any_image(path):
+    path = Path(path)
+    suffixes = "".join(path.suffixes).lower()
+    if suffixes.endswith(".fits") or suffixes.endswith(".fits.gz"):
+        fits_like = True
+    else:
+        fits_like = False
+
+    if not fits_like:
+        return np.asarray(Image.open(path))
+
+    with fits.open(path) as hdul:
+        if "SCI" in hdul:
+            data = hdul["SCI"].data
+        else:
+            hdu = next((h for h in hdul if getattr(h, "data", None) is not None and np.ndim(h.data) >= 2), None)
+            if hdu is None:
+                raise ValueError(f"No 2D image in {path}")
+            data = hdu.data
+        data = np.asarray(data).squeeze()
+        if data.ndim > 2:
+            data = data[0]
+
+    zscale = ZScaleInterval()
+    vmin, vmax = zscale.get_limits(data)
+    return data, vmin, vmax
+
+
+# Not used anymore (will keep it here for potential use)
+def plot_duplicate_lens_clusters(
+    df,
+    base_dir=".",
+    outdir="cluster_panels",
+    radius_arcsec=30.0,
+    filename_col="filename",
+    cluster_col="cluster_id",
+):
+    outdir = Path(outdir)
+    outdir.mkdir(exist_ok=True)
+    base_dir = Path(base_dir)
+
+    multi_ids = get_duplicate_cluster_ids(df, cluster_col=cluster_col)
+    saved_paths = []
+
+    for cluster_id in multi_ids:
+        rows = df[df[cluster_col] == cluster_id].reset_index(drop=True)
+        n_members = len(rows)
+        ncols = min(5, n_members)
+        nrows = math.ceil(n_members / ncols)
+        fig, axes = plt.subplots(nrows, ncols, figsize=(3 * ncols, 3 * nrows))
+        axes = np.atleast_2d(axes)
+
+        for i, row in rows.iterrows():
+            r_idx, c_idx = divmod(i, ncols)
+            ax = axes[r_idx, c_idx]
+            image_path = Path(row.get(filename_col))
+
+            try:
+                if not image_path.is_absolute():
+                    image_path = base_dir / image_path
+                img = read_any_image(image_path)
+                if isinstance(img, tuple):
+                    data, vmin, vmax = img
+                    ax.imshow(data, origin="lower", cmap="gray", vmin=vmin, vmax=vmax)
+                else:
+                    ax.imshow(img, origin="lower")
+                ax.set_title(str(i), fontsize=8)
+            except Exception as exc:
+                ax.text(
+                    0.5,
+                    0.5,
+                    f"Failed:\n{image_path.name}\n{exc}",
+                    ha="center",
+                    va="center",
+                    fontsize=7,
+                )
+            ax.set_axis_off()
+
+        for blank_idx in range(n_members, nrows * ncols):
+            r_idx, c_idx = divmod(blank_idx, ncols)
+            axes[r_idx, c_idx].set_visible(False)
+
+        fig.suptitle(f"Cluster {cluster_id} - {n_members} members (<={radius_arcsec}\")", y=0.98, fontsize=12)
+        fig.tight_layout()
+        output_path = outdir / f"cluster_{cluster_id}.png"
+        fig.savefig(output_path, dpi=150)
+        plt.close(fig)
+        saved_paths.append(output_path)
+
+    return saved_paths
 
 def point_in_spoly(ra, dec, spoly_string):
     polygon = parse_spoly_to_polygon(spoly_string)
