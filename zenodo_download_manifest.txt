@@ -4,3 +4,7 @@ https://zenodo.org/api/records/19147582/draft/files/cosmos_footprint_matches.par
 https://zenodo.org/api/records/19147582/draft/files/astrodeep_footprint_matches.parquet/content astrodeep_footprint_matches.parquet
 https://zenodo.org/api/records/19147582/draft/files/jwst_stage3_footprints.parquet/content jwst_stage3_footprints.parquet
 https://zenodo.org/api/records/19147582/draft/files/all_cutouts_df.parquet/content all_cutouts_df.parquet
+https://zenodo.org/api/records/19147582/draft/files/all_COSMOS_photoz_df.csv/content all_COSMOS_photoz_df.csv
+https://zenodo.org/api/records/19147582/draft/files/all_ASTRODEEP_photoz_df.csv/content all_ASTRODEEP_photoz_df.csv
+https://zenodo.org/api/records/19147582/draft/files/ASTRODEEP_cat.csv/content ASTRODEEP_cat.csv
+https://zenodo.org/api/records/19147582/draft/files/COSMOS_cat.csv/content COSMOS_cat.csv

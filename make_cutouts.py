@@ -34,7 +34,7 @@ def build_parser():
     )
     parser.add_argument(
         "--image-dir",
-        default=str(DATA_DIR / "temp_all_lenses"),
+        default=str(DATA_DIR / "cutouts_dir"),
         help="Directory where PNG cutouts are written.",
     )
     return parser
@@ -85,7 +85,7 @@ def summarize_output(results_df: pd.DataFrame, matches_df: pd.DataFrame, catalog
 def run_make_cutouts(catalogue: str, matches_path: str | None = None, output_path: str | None = None, image_dir: str | None = None) -> pd.DataFrame:
     matches_path = matches_path or str(DATA_DIR / f"{catalogue}_footprint_matches.parquet")
     output_path = output_path or str(DATA_DIR / f"{catalogue}_cutouts_df.parquet")
-    image_dir = image_dir or str(DATA_DIR / "temp_all_lenses")
+    image_dir = image_dir or str(DATA_DIR / "cutouts_dir")
 
     matches_df = pd.read_parquet(matches_path)
     summarize_input(matches_df, catalogue)
