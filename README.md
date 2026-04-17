@@ -31,7 +31,7 @@ python -m pip install -r requirements.txt
 
 This repository is the JWST-specific data-preparation layer around AnomalyMatch. It does the following:
 
-1. scans JWST NIRCam Stage 3 image products and external source catalogues available on ESA Datalabs
+1. scans JWST NIRCam Stage 3 image products and external source catalogues available on ESA Datalabs (needs access to `JWST_DATALABS_PATH`)
 2. matches ASTRODEEP and COSMOS catalogue sources with these JWST footprints
 3. builds 4-filter RGB cutouts around those matched sources
 4. package the cutouts into formats that are convenient for model training and prediction

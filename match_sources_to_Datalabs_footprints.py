@@ -62,6 +62,14 @@ def load_footprints(footprints_path: str, catalogue: str) -> pd.DataFrame:
     footprints_df = pd.read_parquet(footprints_path)
     print(f"[{catalogue}] Footprint rows loaded: {len(footprints_df)}")
 
+    required_columns = {"file_path", "footprint"}
+    missing_columns = required_columns - set(footprints_df.columns)
+    if missing_columns:
+        raise ValueError(
+            f"[{catalogue}] Footprints parquet is missing required columns: {sorted(missing_columns)}. "
+            "This usually means the JWST footprint extraction step found no valid Stage 3 FITS files."
+        )
+
     if catalogue == "cosmos":
         cosmos_obs = pd.read_csv(COSMOS_OBS_FILE)
         obs_to_keep = cosmos_obs["obs_id"].tolist()
@@ -128,6 +136,14 @@ def summarize_output(catalogue: str, out_df: pd.DataFrame, elapsed: float, skipp
 def run_matching(catalogue: str, footprints_path: str) -> pd.DataFrame:
     footprints_df = load_footprints(footprints_path, catalogue)
     source_df = load_sources(catalogue)
+
+    if footprints_df.empty:
+        print(f"[{catalogue}] No footprints available after filtering. Writing empty output.")
+        out_df = pd.DataFrame(columns=list(source_df.columns) + ["file_path"])
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        out_file = DATA_DIR / f"{catalogue}_footprint_matches.parquet"
+        out_df.to_parquet(out_file, engine="pyarrow", compression="zstd")
+        return out_df
 
     points = [Point(ra, dec) for ra, dec in zip(source_df["RA"], source_df["DEC"])]
     tree = STRtree(points)

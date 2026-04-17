@@ -94,7 +94,7 @@ def compute_all_footprints(file_paths: list[str]) -> list[dict]:
 
 
 def write_footprints(rows: list[dict]) -> pd.DataFrame:
-    df = pd.DataFrame(rows)
+    df = pd.DataFrame(rows, columns=["file_path", "RA", "DEC", "footprint"])
     df.to_parquet(
         FOOTPRINTS_OUTPUT,
         engine="pyarrow",
