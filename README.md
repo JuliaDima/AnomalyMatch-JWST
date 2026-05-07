@@ -1,19 +1,26 @@
-
-
-<h1 align="center">AnomalyMatch for James Webb Space Telescope</h1>
+<div align="center">
+  <h2>AnomalyMatch for James Webb Space Telescope</h2>
+  <p>
+    <a href="https://github.com/esa/AnomalyMatch">
+      <img alt="View AnomalyMatch on GitHub" src="https://img.shields.io/badge/View%20AnomalyMatch%20on-GitHub-2da44e?style=flat&logo=github&logoColor=white">
+    </a>
+  </p>
+  <p>
+    <sub>
+      JWST data-preparation and lens-discovery workflow built on
+      <a href="https://github.com/esa/AnomalyMatch">AnomalyMatch</a>.
+    </sub>
+  </p>
+</div>
 
 <p align="center">
-  <a href="https://github.com/esa/AnomalyMatch">
-    <img alt="View AnomalyMatch on GitHub" src="https://img.shields.io/badge/View%20AnomalyMatch%20on-GitHub-2da44e?style=flat&logo=github&logoColor=white">
-  </a>
+  <img src="assets/mosaic_A.png" alt="Grade A lens mosaic" width="560"><br>
+  <sub><em>Examples of Grade A lenses found in this project, with measurement method specified.</em></sub>
 </p>
 
-This repository builds on top of [AnomalyMatch](https://github.com/esa/AnomalyMatch) and is focused on discovering gravitational lenses in JWST.
+<h3>Setup</h3>
 
-# Setup
-
-Create a conda environment, then install this project and its dependencies into
-that environment:
+<p><sub>Create a conda environment, then install this project and its dependencies into that environment.</sub></p>
 
 ```bash
 conda create -n am-jwst python=3.11
@@ -22,27 +29,46 @@ conda activate am-jwst
 "$CONDA_PREFIX/bin/python" -m pip install -e .
 ```
 
-`requirements.txt` installs AnomalyMatch from
-`https://github.com/ESA/AnomalyMatch.git`, which provides the
-`anomaly_match` Python module used by the notebooks.
-
-
-<p align="center">
-  <img src="assets/mosaic_A.png" alt="Grade A lens mosaic" width="620"><br>
-  <sub><em>Examples of Grade A lenses found in this project, with their measurement method specified (spectroscopic / photometric).</em></sub>
+<p>
+  <sub>
+    <code>requirements.txt</code> installs AnomalyMatch from
+    <code>https://github.com/ESA/AnomalyMatch.git</code>, which provides the
+    <code>anomaly_match</code> module used by the notebooks.
+  </sub>
 </p>
 
-# Workflow
+<h3>Workflow</h3>
 
-This repository is the JWST-specific data-preparation layer around AnomalyMatch. It does the following:
+<p><sub>This repository is the JWST-specific data-preparation layer around AnomalyMatch.</sub></p>
 
-1. scans JWST NIRCam Stage 3 image products and external source catalogues available on ESA Datalabs (needs access to `JWST_DATALABS_PATH`)
-2. matches ASTRODEEP and COSMOS catalogue sources with these JWST footprints
-3. builds 4-filter RGB cutouts around those matched sources
-4. package the cutouts into formats that are convenient for model training and prediction
-5. use AnomalyMatch on the resulting cutout dataset
+<table>
+  <tr>
+    <th><sub>Step</sub></th>
+    <th><sub>What it does</sub></th>
+  </tr>
+  <tr>
+    <td><sub>1</sub></td>
+    <td><sub>Scan JWST NIRCam Stage 3 products and source catalogues.</sub></td>
+  </tr>
+  <tr>
+    <td><sub>2</sub></td>
+    <td><sub>Match ASTRODEEP and COSMOS sources to JWST footprints.</sub></td>
+  </tr>
+  <tr>
+    <td><sub>3</sub></td>
+    <td><sub>Build 4-filter RGB cutouts around matched sources.</sub></td>
+  </tr>
+  <tr>
+    <td><sub>4</sub></td>
+    <td><sub>Package cutouts for model training and prediction.</sub></td>
+  </tr>
+  <tr>
+    <td><sub>5</sub></td>
+    <td><sub>Use AnomalyMatch on the resulting JWST cutout dataset.</sub></td>
+  </tr>
+</table>
 
-These steps use the following predefined configuration:
+<h3>Configuration</h3>
 
 <table>
   <tr>
@@ -53,74 +79,101 @@ These steps use the following predefined configuration:
   <tr>
     <td><sub>JWST_FILTERS</sub></td>
     <td><sub>F115, F150, F277, F444</sub></td>
-    <td><sub>The four NIRCam filters used here. If one or more filters are missing for a product, that product is skipped in the main pipeline.</sub></td>
+    <td><sub>NIRCam filters used by the main pipeline.</sub></td>
   </tr>
   <tr>
     <td><sub>MIN_CUTOUT_SIZE</sub></td>
     <td><sub>12</sub></td>
-    <td><sub>Minimum allowed cutout radius size in pixels resulted from Source Extractor segmentation area.</sub></td>
+    <td><sub>Minimum allowed source-derived cutout radius in pixels.</sub></td>
   </tr>
   <tr>
     <td><sub>CUTOUT_FACTOR</sub></td>
     <td><sub>3.5</sub></td>
-    <td><sub>Factor applied to the source-derived radius for the cutout extraction window.</sub></td>
+    <td><sub>Scale factor applied to the source-derived radius.</sub></td>
   </tr>
   <tr>
     <td><sub>CUTOUT_RES</sub></td>
     <td><sub>224</sub></td>
-    <td><sub>Final resized image resolution used for training.</sub></td>
+    <td><sub>Final resized image resolution for training.</sub></td>
   </tr>
   <tr>
     <td><sub>JWST_OPT_RES_NIRCam_SHORT</sub></td>
     <td><sub>0.0317 arcsec/pixel</sub></td>
-    <td><sub>Pixel scale used for short-wavelength NIRCam channels.</sub></td>
+    <td><sub>Short-wavelength NIRCam pixel scale.</sub></td>
   </tr>
   <tr>
     <td><sub>JWST_OPT_RES_NIRCam_LONG</sub></td>
     <td><sub>0.063 arcsec/pixel</sub></td>
-    <td><sub>Pixel scale used for long-wavelength NIRCam channels.</sub></td>
+    <td><sub>Long-wavelength NIRCam pixel scale.</sub></td>
   </tr>
 </table>
 
-There are two ways to get the inputs for this workflow:
+<h3>Data</h3>
 
-1. Download the shared dataset from Zenodo:
-
-```bash
-./fetch_esac_data.sh
-```
-
-The download manifest points to the published Zenodo record:
-
-- https://zenodo.org/records/19147582
-- DOI: `10.5281/zenodo.19147582`
-
-It downloads the shared tables into `DATA/`. The large `training_images.zip`
-file is optional and is skipped by default (use `--include-optional` to include it):
+<p>
+  <sub>
+    Download the shared dataset from Zenodo. The manifest points to
+    <a href="https://zenodo.org/records/19147582">Zenodo record 19147582</a>
+    (<code>10.5281/zenodo.19147582</code>) and verifies MD5 checksums.
+  </sub>
+</p>
 
 ```bash
 ./fetch_esac_data.sh
 ```
 
-The pipeline reads these downloaded paths directly:
+<p>
+  <sub>
+    This downloads the shared tables into <code>DATA/</code>. The large
+    <code>training_images.zip</code> file is optional and skipped by default.
+    Include it only when needed:
+  </sub>
+</p>
 
-- `DATA/jwst_stage3_footprints.parquet`
-- `DATA/ASTRODEEP_cat.csv`
-- `DATA/COSMOS_cat.csv`
-- `DATA/cosmos_observations.csv` if available; otherwise the COSMOS observation
-  filter is skipped
+```bash
+./fetch_esac_data.sh --include-optional
+```
 
-2. To re-run the matching and cutout steps from the downloaded `DATA/` inputs (regenerated matched observations and image cutouts):
+<table>
+  <tr>
+    <th><sub>Input</sub></th>
+    <th><sub>Default path</sub></th>
+  </tr>
+  <tr>
+    <td><sub>JWST footprints</sub></td>
+    <td><sub><code>DATA/jwst_stage3_footprints.parquet</code></sub></td>
+  </tr>
+  <tr>
+    <td><sub>ASTRODEEP catalogue</sub></td>
+    <td><sub><code>DATA/ASTRODEEP_cat.csv</code></sub></td>
+  </tr>
+  <tr>
+    <td><sub>COSMOS catalogue</sub></td>
+    <td><sub><code>DATA/COSMOS_cat.csv</code></sub></td>
+  </tr>
+  <tr>
+    <td><sub>COSMOS observation filter</sub></td>
+    <td><sub><code>DATA/cosmos_observations.csv</code>, if available</sub></td>
+  </tr>
+</table>
+
+<h3>Run</h3>
+
+<p><sub>Re-run matching and cutout generation from the downloaded <code>DATA/</code> inputs.</sub></p>
 
 ```bash
 ./run_jwst_pipeline.sh
 ```
 
-The raw FITS footprint extraction command is still available as
-`amjwst-footprints` for **ESA Datalabs** use, but it is not part of the default
-`run_jwst_pipeline.sh` as it requires access to JWST archives in ESA Datalabs.
+<p>
+  <sub>
+    Raw FITS footprint extraction is still available as <code>amjwst-footprints</code>
+    for ESA Datalabs use, but it is not part of the default pipeline because it
+    requires access to JWST archives in ESA Datalabs.
+  </sub>
+</p>
 
-**(optional)** After installing the project in editable mode, the workflow steps can also be run directly:
+<p><sub>Optional CLI entry points after editable install:</sub></p>
 
 ```bash
 amjwst-footprints
@@ -128,6 +181,9 @@ amjwst-match-footprints
 amjwst-run-cutouts
 ```
 
-The original notebooks are still available for exploratory work:
-- `scripts.ipynb`
-- `model_training.ipynb`
+<h3>Notebooks</h3>
+
+<ul>
+  <li><sub><code>scripts.ipynb</code></sub></li>
+  <li><sub><code>model_training.ipynb</code></sub></li>
+</ul>
