@@ -1,3 +1,4 @@
+import argparse
 import os
 import time
 import warnings
@@ -9,14 +10,24 @@ from astropy.io import fits
 from astropy.utils.exceptions import AstropyWarning
 from astropy.wcs import WCS
 
-from constants import JWST_DATALABS_PATH, JWST_FILTERS, STAGE3_REGEX
+from .constants import JWST_DATALABS_PATH, JWST_FILTERS, STAGE3_REGEX
 
 warnings.simplefilter("ignore", category=AstropyWarning)
 
-REPO_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = REPO_ROOT / "DATA"
 FILE_PATHS_OUTPUT = DATA_DIR / "file_paths.parquet"
 FOOTPRINTS_OUTPUT = DATA_DIR / "jwst_stage3_footprints.parquet"
+
+
+def build_parser():
+    parser = argparse.ArgumentParser(description="Extract footprints from JWST Datalabs Stage 3 FITS files.")
+    parser.add_argument(
+        "--jwst-datalabs-path",
+        default=JWST_DATALABS_PATH,
+        help="Root directory containing JWST Datalabs files. Defaults to JWST_DATALABS_PATH.",
+    )
+    return parser
 
 
 def extract_ra_dec(header) -> tuple[float, float]:
@@ -104,9 +115,10 @@ def write_footprints(rows: list[dict]) -> pd.DataFrame:
 
 
 def main() -> None:
-    file_paths, total_files = collect_stage3_file_paths(JWST_DATALABS_PATH)
+    args = build_parser().parse_args()
+    file_paths, total_files = collect_stage3_file_paths(args.jwst_datalabs_path)
     write_file_paths(file_paths)
-    print(f"Found {len(file_paths)} files. Total files in {JWST_DATALABS_PATH}: {total_files}.")
+    print(f"Found {len(file_paths)} files. Total files in {args.jwst_datalabs_path}: {total_files}.")
 
     start_time = time.time()
     footprint_rows = compute_all_footprints(file_paths)

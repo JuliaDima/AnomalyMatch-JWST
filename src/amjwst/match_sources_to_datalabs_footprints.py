@@ -10,15 +10,24 @@ from astropy.wcs import WCS
 from shapely.geometry import Point, Polygon
 from shapely.strtree import STRtree
 
-from constants import JWST_FILTERS
-from utils import compute_invalid_mask, is_within_arcsec, u
+from .constants import JWST_FILTERS
+from .utils import compute_invalid_mask, is_within_arcsec, u
 
-REPO_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = REPO_ROOT / "DATA"
 
-ASTRODEEP_FILE = "/media/home/team_workspaces/AnomalyMatch-JWST-Lenses/astrodeep-source-catalogue/ASTRODEEP-JWST_optap.csv"
-COSMOS_OBS_FILE = "/media/home/team_workspaces/AnomalyMatch-JWST-Lenses/COSMOS-source-catalogue/cosmos_observations.csv"
-COSMOS_FILE = "/media/home/team_workspaces/AnomalyMatch-JWST-Lenses/COSMOS-source-catalogue/cosmos_catalog.csv"
+ASTRODEEP_FILE = os.environ.get(
+    "ASTRODEEP_FILE",
+    str(DATA_DIR / "ASTRODEEP_cat.csv"),
+)
+COSMOS_OBS_FILE = os.environ.get(
+    "COSMOS_OBS_FILE",
+    str(DATA_DIR / "cosmos_observations.csv"),
+)
+COSMOS_FILE = os.environ.get(
+    "COSMOS_FILE",
+    str(DATA_DIR / "COSMOS_cat.csv"),
+)
 
 
 def build_parser():
@@ -33,6 +42,21 @@ def build_parser():
         "--footprints",
         default=str(DATA_DIR / "jwst_stage3_footprints.parquet"),
         help="Input parquet containing JWST stage-3 footprints.",
+    )
+    parser.add_argument(
+        "--astrodeep-file",
+        default=ASTRODEEP_FILE,
+        help="ASTRODEEP source catalogue CSV. Defaults to ASTRODEEP_FILE.",
+    )
+    parser.add_argument(
+        "--cosmos-file",
+        default=COSMOS_FILE,
+        help="COSMOS source catalogue CSV. Defaults to COSMOS_FILE.",
+    )
+    parser.add_argument(
+        "--cosmos-obs-file",
+        default=COSMOS_OBS_FILE,
+        help="COSMOS observation filter CSV. Defaults to COSMOS_OBS_FILE.",
     )
     return parser
 
@@ -58,7 +82,7 @@ def open_sci_fits(file_path: str):
     return hdul, sci, hdr
 
 
-def load_footprints(footprints_path: str, catalogue: str) -> pd.DataFrame:
+def load_footprints(footprints_path: str, catalogue: str, cosmos_obs_path: str = COSMOS_OBS_FILE) -> pd.DataFrame:
     footprints_df = pd.read_parquet(footprints_path)
     print(f"[{catalogue}] Footprint rows loaded: {len(footprints_df)}")
 
@@ -71,13 +95,16 @@ def load_footprints(footprints_path: str, catalogue: str) -> pd.DataFrame:
         )
 
     if catalogue == "cosmos":
-        cosmos_obs = pd.read_csv(COSMOS_OBS_FILE)
-        obs_to_keep = cosmos_obs["obs_id"].tolist()
-        pattern = "|".join(obs_to_keep)
-        footprints_df = footprints_df[
-            footprints_df["file_path"].str.contains(pattern, case=False, na=False)
-        ].copy()
-        print(f"[{catalogue}] Footprint rows after COSMOS observation filter: {len(footprints_df)}")
+        if Path(cosmos_obs_path).exists():
+            cosmos_obs = pd.read_csv(cosmos_obs_path)
+            obs_to_keep = cosmos_obs["obs_id"].tolist()
+            pattern = "|".join(obs_to_keep)
+            footprints_df = footprints_df[
+                footprints_df["file_path"].str.contains(pattern, case=False, na=False)
+            ].copy()
+            print(f"[{catalogue}] Footprint rows after COSMOS observation filter: {len(footprints_df)}")
+        else:
+            print(f"[{catalogue}] COSMOS observation filter not found at {cosmos_obs_path}; using all footprints.")
 
     footprints_df["polygon"] = footprints_df["footprint"].apply(lambda fp: Polygon(fp))
     footprints_df["pointing_key"] = footprints_df["file_path"].apply(pointing_key)
@@ -92,14 +119,18 @@ def load_footprints(footprints_path: str, catalogue: str) -> pd.DataFrame:
     return footprints_df
 
 
-def load_sources(catalogue: str) -> pd.DataFrame:
+def load_sources(
+    catalogue: str,
+    astrodeep_path: str = ASTRODEEP_FILE,
+    cosmos_path: str = COSMOS_FILE,
+) -> pd.DataFrame:
     if catalogue == "astrodeep":
-        df = pd.read_csv(ASTRODEEP_FILE)
+        df = pd.read_csv(astrodeep_path)
         df = df[["RA", "DEC", "ID", "isoarea_SE"]].copy()
         df["seg_area"] = df["isoarea_SE"]
         df.drop(columns=["isoarea_SE"], inplace=True)
     elif catalogue == "cosmos":
-        df = pd.read_csv(COSMOS_FILE)
+        df = pd.read_csv(cosmos_path)
     else:
         raise ValueError("catalogue must be 'astrodeep' or 'cosmos'")
 
@@ -133,9 +164,15 @@ def summarize_output(catalogue: str, out_df: pd.DataFrame, elapsed: float, skipp
         )
 
 
-def run_matching(catalogue: str, footprints_path: str) -> pd.DataFrame:
-    footprints_df = load_footprints(footprints_path, catalogue)
-    source_df = load_sources(catalogue)
+def run_matching(
+    catalogue: str,
+    footprints_path: str,
+    astrodeep_path: str = ASTRODEEP_FILE,
+    cosmos_path: str = COSMOS_FILE,
+    cosmos_obs_path: str = COSMOS_OBS_FILE,
+) -> pd.DataFrame:
+    footprints_df = load_footprints(footprints_path, catalogue, cosmos_obs_path)
+    source_df = load_sources(catalogue, astrodeep_path, cosmos_path)
 
     if footprints_df.empty:
         print(f"[{catalogue}] No footprints available after filtering. Writing empty output.")
@@ -222,7 +259,13 @@ def main():
     for catalogue in catalogues:
         print(f"Starting {catalogue}")
         catalogue_start = time.perf_counter()
-        run_matching(catalogue, args.footprints)
+        run_matching(
+            catalogue,
+            args.footprints,
+            astrodeep_path=args.astrodeep_file,
+            cosmos_path=args.cosmos_file,
+            cosmos_obs_path=args.cosmos_obs_file,
+        )
         print(f"Finished {catalogue} in {time.perf_counter() - catalogue_start:.2f} seconds")
 
     print(f"Total elapsed seconds: {time.perf_counter() - total_start:.2f}")

@@ -1,6 +1,6 @@
 import time
 
-from make_cutouts import run_make_cutouts
+from .make_cutouts import run_make_cutouts
 
 
 def run_step(catalogue: str) -> float:

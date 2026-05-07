@@ -7,10 +7,10 @@ import pandas as pd
 from astropy.io import fits
 from astropy.wcs import WCS
 
-from constants import CUTOUT_FACTOR, JWST_FILTERS, MIN_CUTOUT_SIZE
-from utils import create_list_one_band_cutout_w_area, make_mtf_rgb, np, cv2
+from .constants import CUTOUT_FACTOR, JWST_FILTERS, MIN_CUTOUT_SIZE
+from .utils import create_list_one_band_cutout_w_area, make_mtf_rgb, np, cv2
 
-REPO_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = REPO_ROOT / "DATA"
 
 

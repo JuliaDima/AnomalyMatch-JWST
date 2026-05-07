@@ -1,0 +1,14 @@
+# Zenodo record: https://zenodo.org/records/19147582
+# DOI: 10.5281/zenodo.19147582
+# Format: <url> <relative/path/under/DATA> <checksum> [optional]
+https://zenodo.org/records/19147582/files/all_cutouts_df.parquet?download=1 all_cutouts_df.parquet md5:d2af34ae4117351ac0cca23a215f1492
+https://zenodo.org/records/19147582/files/galaxy-lens-class-voting-classifications.csv?download=1 galaxy-lens-class-voting-classifications.csv md5:ef36332aa8633965dac8da8040e1a39a
+https://zenodo.org/records/19147582/files/COSMOS_cat.csv?download=1 COSMOS_cat.csv md5:842d07cd0e0cc7710254e2bb321a67ff
+https://zenodo.org/records/19147582/files/lenses_confirmed.csv?download=1 lenses_confirmed.csv md5:d140bcb70861f1f3f6780de8cfa2e162
+https://zenodo.org/records/19147582/files/astrodeep_footprint_matches.parquet?download=1 astrodeep_footprint_matches.parquet md5:657652485927acf5ba29c07372c4f876
+https://zenodo.org/records/19147582/files/cosmos_footprint_matches.parquet?download=1 cosmos_footprint_matches.parquet md5:76c6bc6967a7fc28e9e64c19e194b594
+https://zenodo.org/records/19147582/files/jwst_stage3_footprints.parquet?download=1 jwst_stage3_footprints.parquet md5:3013b47cec859aa746f5b2cc973e8f8b
+https://zenodo.org/records/19147582/files/training_images.zip?download=1 training_images.zip md5:4c43d1b50c308eb9ff18a00882977ffa optional
+https://zenodo.org/records/19147582/files/all_COSMOS_photoz_df.csv?download=1 all_COSMOS_photoz_df.csv md5:857de27c54b9d4af72eaad2fa2a8f757
+https://zenodo.org/records/19147582/files/ASTRODEEP_cat.csv?download=1 ASTRODEEP_cat.csv md5:e55def4ac4d0cc83e3780c4a1d097759
+https://zenodo.org/records/19147582/files/all_ASTRODEEP_photoz_df.csv?download=1 all_ASTRODEEP_photoz_df.csv md5:7325d689963753161df465634638e08b

@@ -4,9 +4,9 @@ from pathlib import Path
 import pandas as pd
 from images_to_zarr.convert import convert
 
-from constants import IMAGE_EXTENSIONS
+from .constants import IMAGE_EXTENSIONS
 
-repo_root = Path(__file__).resolve().parent
+repo_root = Path(__file__).resolve().parents[2]
 base_folder = repo_root / "DATA" / "dataset_v2"
 destination_folder = base_folder / "training_images"
 labeled_data_path = base_folder / "labels_w_clear_lenses.csv"

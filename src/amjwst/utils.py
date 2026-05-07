@@ -28,7 +28,7 @@ from reproject import reproject_interp
 from sklearn.cluster import DBSCAN
 from shapely.geometry import Point, Polygon
 
-from constants import *
+from .constants import *
 
 logger = logging.getLogger(__name__)
 logging.getLogger("astroquery").setLevel(logging.WARNING)

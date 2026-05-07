@@ -1,2 +1,4 @@
 DATA/
 __pycache__/
+src/amjwst.egg-info/
+anomaly_match_results/sessions/

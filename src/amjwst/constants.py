@@ -1,9 +1,10 @@
+import os
 import astropy.units as u
 import re
 
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".tif", ".tiff", ".fits"}
 
-JWST_DATALABS_PATH = "/media/home/data/user"
+JWST_DATALABS_PATH = os.environ.get("JWST_DATALABS_PATH", "/media/home/data/user")
 JWST_FILTERS = ['f115', 'f150', 'f277', 'f444']
 
 # Resolution: 2 × 2k × 2k detectors (arranged 2×2) per module
