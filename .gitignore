@@ -2,3 +2,5 @@ DATA/
 __pycache__/
 src/amjwst.egg-info/
 anomaly_match_results/sessions/
+paper.md
+ARVP_AM_for_JWST_Lenses_overleaf/
